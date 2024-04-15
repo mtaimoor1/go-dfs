@@ -6,9 +6,23 @@ import (
 	"sync"
 )
 
+// TCPPeer represent the remote node over TCP connection
+type TCPPeer struct {
+	conn     net.Conn
+	outbound bool
+}
+
+func NewTCPPeer(conn net.Conn, outbound bool) *TCPPeer {
+	return &TCPPeer{
+		conn:     conn,
+		outbound: outbound,
+	}
+}
+
 type TCPTransport struct {
 	listenAddress string
 	listerner     net.Listener
+	handshakeFunc HandeshakeFunc
 
 	mu    sync.RWMutex
 	peers map[net.Addr]Peer
@@ -17,6 +31,7 @@ type TCPTransport struct {
 func NewTCPTransport(listenAddr string) *TCPTransport {
 	return &TCPTransport{
 		listenAddress: listenAddr,
+		handshakeFunc: NOPHandshakeFunc,
 	}
 }
 
@@ -44,5 +59,6 @@ func (t *TCPTransport) startAcceptLoop() {
 }
 
 func (t *TCPTransport) handleConn(conn net.Conn) {
-	fmt.Printf("New incoming connection: %v", conn)
+	peer := NewTCPPeer(conn, true)
+	fmt.Printf("New incoming connection: %v", peer)
 }
