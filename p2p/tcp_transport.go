@@ -63,8 +63,17 @@ func (t *TCPTransport) handleConn(conn net.Conn) {
 	peer := NewTCPPeer(conn, true)
 	fmt.Printf("New incoming connection: %v", peer)
 
+	// Handshake
+	if err := t.handshakeFunc(peer); err != nil {
+		fmt.Printf("Error while handshake: %s\n", err)
+		fmt.Print("Closing TCP connection!!!")
+		conn.Close()
+		return
+	}
+
 	msg := &Temp{}
 
+	// Read Loop
 	for {
 		if err := t.decoder.Decode(conn, msg); err != nil {
 			fmt.Printf("Decoding Error, %s\n", err)
@@ -74,3 +83,5 @@ func (t *TCPTransport) handleConn(conn net.Conn) {
 }
 
 type Temp struct{}
+
+// 51:05
